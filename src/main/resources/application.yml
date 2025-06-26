@@ -1,2 +1,15 @@
-spring.application.name=save-bulgaria
-server.port=4000
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/save_bulgaria_db
+    username: postgres
+    password: 123
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
