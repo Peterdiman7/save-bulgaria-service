@@ -1,1 +1,2 @@
 spring.application.name=save-bulgaria
+server.port=4000
