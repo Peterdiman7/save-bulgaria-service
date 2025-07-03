@@ -34,23 +34,44 @@ public class PhotoController {
                                          @RequestParam("email") String email,
                                          @RequestParam("name") String name) {
         try {
+            // Validate parameters
+            if (file == null || file.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "File is required"));
+            }
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+            }
+            if (name == null || name.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Name is required"));
+            }
+
             Photo photo = photoService.savePhotoForUser(email, name, file);
-            return ResponseEntity.ok(photo);
+
+            // Return photo info without the binary data
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", photo.getId());
+            response.put("filename", photo.getFilename());
+            response.put("contentType", photo.getContentType());
+            response.put("message", "Photo uploaded successfully");
+
+            return ResponseEntity.ok(response);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save photo");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to process file: " + e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Unexpected error: " + e.getMessage()));
         }
     }
 
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deletePhotoById(
-            @PathVariable("id") Long id
-    ) {
+    public ResponseEntity<Map<String, String>> deletePhotoById(@PathVariable("id") Long id) {
         String message = photoService.deletePhoto(id);
-
         Map<String, String> response = new HashMap<>();
         response.put("message", message);
-
         return ResponseEntity.ok(response);
     }
 }

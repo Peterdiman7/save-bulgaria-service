@@ -28,13 +28,26 @@ public class PhotoServiceImpl implements PhotoService {
     }
 
     public Photo savePhotoForUser(String email, String name, MultipartFile file) throws IOException {
-        // Find or create user
-        User user = usersRepository.findByEmail(email).orElseGet(() -> {
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setName(name);
-            return usersRepository.save(newUser);
-        });
+        // Find existing user by email
+        User user = usersRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email +
+                        ". Please login first before uploading photos."));
+
+        // Validate file
+        if (file.isEmpty()) {
+            throw new RuntimeException("Cannot upload empty file");
+        }
+
+        // Check file size (e.g., max 10MB)
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new RuntimeException("File size too large. Maximum 10MB allowed.");
+        }
+
+        // Check file type
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new RuntimeException("Only image files are allowed");
+        }
 
         Photo photo = new Photo();
         photo.setFilename(file.getOriginalFilename());

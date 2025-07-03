@@ -10,7 +10,7 @@ public class Photo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private  Long id;
+    private Long id;
 
     private String filename;
 
@@ -20,7 +20,7 @@ public class Photo {
     private byte[] data;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_email", referencedColumnName = "email")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     @JsonBackReference
     private User user;
 }
