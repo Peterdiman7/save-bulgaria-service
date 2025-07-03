@@ -20,6 +20,7 @@ COPY --from=build /app/target/save-bulgaria-0.0.1-SNAPSHOT.jar app.jar
 
 # Tell Spring Boot to use the PORT environment variable from Render
 ENV SERVER_PORT=${PORT:-8080}
+EXPOSE 8080
 
 # Run the jar
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
