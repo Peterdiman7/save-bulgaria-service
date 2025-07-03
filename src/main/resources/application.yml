@@ -1,4 +1,6 @@
 spring:
+  server:
+    port: ${PORT:8080}
   datasource:
     url: jdbc:postgresql://localhost:5432/save_bulgaria_db
     username: postgres
