@@ -1,10 +1,16 @@
 services:
   - type: web
     name: save-bulgaria-api
-    env: docker
+    env: docker         # <-- this forces Docker mode
+    region: frankfurt   # or oregon
     plan: free
-    region: frankfurt  # <-- This sets the region to Germany
     autoDeploy: true
     envVars:
       - key: PORT
         value: 8080
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://your-db-host:5432/save_bulgaria_db
+      - key: SPRING_DATASOURCE_USERNAME
+        value: postgres
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: 123
