@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: save-bulgaria-api
+    env: docker
+    plan: free
+    region: frankfurt  # <-- This sets the region to Germany
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8080
