@@ -1,26 +1,31 @@
-# Stage 1: Build the app using Maven + JDK 17
-FROM maven:3.8.6-openjdk-17 AS build
-
+# ---------- STAGE 1: Build with Maven and JDK 17 ----------
+FROM maven:3.8.6-eclipse-temurin-17 AS build
+# Set working directory inside the container
 WORKDIR /app
 
-# Copy pom.xml and source code
+# Copy only the pom.xml first (used to resolve dependencies)
 COPY pom.xml .
+
+# Copy the source code
 COPY src ./src
 
-# Build the jar without tests
+# Build the project, skipping tests to save time
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the app with a lightweight OpenJDK runtime
-FROM openjdk:17-jdk-alpine
 
+# ---------- STAGE 2: Run with lightweight JDK ----------
+FROM eclipse-temurin:17-jdk
+# Set working directory inside the container
 WORKDIR /app
 
-# Copy the jar from the build stage
+# Copy the built JAR file from the previous build stage
 COPY --from=build /app/target/save-bulgaria-0.0.1-SNAPSHOT.jar app.jar
 
-# Tell Spring Boot to use the PORT environment variable from Render
+# Set environment variable for Spring Boot to pick up the port
 ENV SERVER_PORT=${PORT:-8080}
+
+# Expose port 8080 so Docker knows which port the app listens on
 EXPOSE 8080
 
-# Run the jar
+# Start the Spring Boot application
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
