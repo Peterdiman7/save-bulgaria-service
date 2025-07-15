@@ -2,9 +2,9 @@ spring:
   server:
     port: ${PORT:8080}
   datasource:
-    url: jdbc:postgresql://localhost:5432/save_bulgaria_db
-    username: postgres
-    password: 123
+    url: jdbc:postgresql://dpg-d1qhlher433s73ed8dtg-a.oregon-postgres.render.com/save_bulgaria_db
+    username: save_bulgaria_db_user
+    password: wdSvfPXocQuOmxShjdxuiWCnD1zELOOM
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
