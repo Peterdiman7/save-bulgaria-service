@@ -22,8 +22,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserDTO> getAllUsers() {
-        log.info("Fetching all users with their photos");
-        return usersRepository.findAllWithPhotos().stream()
+        log.info("Fetching all users with their photo pairs");
+        return usersRepository.findAllWithPhotoPairs().stream()
                 .map(UserDTO::new)
                 .toList();
     }

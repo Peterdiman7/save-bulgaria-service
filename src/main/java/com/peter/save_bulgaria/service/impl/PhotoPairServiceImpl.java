@@ -1,12 +1,11 @@
 package com.peter.save_bulgaria.service.impl;
 
-import com.peter.save_bulgaria.dtos.PhotoPairDTO;
+import com.peter.save_bulgaria.exception.PhotoException;
+import com.peter.save_bulgaria.exception.UserNotFoundException;
 import com.peter.save_bulgaria.model.Photo;
-import com.peter.save_bulgaria.model.PhotoPair;
 import com.peter.save_bulgaria.model.User;
-import com.peter.save_bulgaria.repository.PhotoPairRepository;
 import com.peter.save_bulgaria.repository.PhotosRepository;
-import com.peter.save_bulgaria.service.PhotoPairService;
+import com.peter.save_bulgaria.service.PhotoService;
 import com.peter.save_bulgaria.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,14 +16,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PhotoPairServiceImpl implements PhotoPairService {
+public class PhotoPairServiceImpl implements PhotoService {
 
-    private final PhotoPairRepository photoPairRepository;
     private final PhotosRepository photosRepository;
     private final UserService userService;
 
@@ -35,165 +32,69 @@ public class PhotoPairServiceImpl implements PhotoPairService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PhotoPairDTO> getAllPhotoPairs() {
-        log.info("Fetching all photo pairs");
-        return photoPairRepository.findAll().stream()
-                .map(PhotoPairDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PhotoPairDTO> getPhotoPairsByUserEmail(String email) {
-        log.info("Fetching photo pairs for user: {}", email);
-        return photoPairRepository.findByUserEmailWithPhotosOrderByCreatedAtDesc(email).stream()
-                .map(PhotoPairDTO::new)
-                .collect(Collectors.toList());
+    public List<Photo> getAllPhotos() {
+        log.info("Fetching all photos");
+        return photosRepository.findAll();
     }
 
     @Override
     @Transactional
-    public PhotoPairDTO createPhotoPair(String email, String title, String description) {
-        log.info("Creating new photo pair for user: {}", email);
+    public Photo savePhotoForUser(String email, String name, MultipartFile file) throws IOException {
+        log.info("Saving photo for user: {}", email);
 
+        // Find user - this validates the user exists
         User user = userService.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new UserNotFoundException("email", email));
 
-        PhotoPair photoPair = new PhotoPair();
-        photoPair.setUser(user);
-        photoPair.setTitle(title);
-        photoPair.setDescription(description);
-
-        PhotoPair savedPhotoPair = photoPairRepository.save(photoPair);
-        log.info("Created photo pair with id: {}", savedPhotoPair.getId());
-
-        return new PhotoPairDTO(savedPhotoPair);
-    }
-
-    @Override
-    @Transactional
-    public PhotoPairDTO uploadBeforePhoto(Long photoPairId, MultipartFile file) throws IOException {
-        log.info("Uploading before photo for photo pair: {}", photoPairId);
-
-        PhotoPair photoPair = photoPairRepository.findByIdWithPhotos(photoPairId)
-                .orElseThrow(() -> new RuntimeException("Photo pair not found with id: " + photoPairId));
-
+        // Validate file
         validateFile(file);
 
-        // If there's already a before photo, delete it
-        if (photoPair.getBeforePhoto() != null) {
-            photosRepository.delete(photoPair.getBeforePhoto());
-        }
-
-        Photo beforePhoto = createPhotoFromFile(file);
-        Photo savedBeforePhoto = photosRepository.save(beforePhoto);
-
-        photoPair.setBeforePhoto(savedBeforePhoto);
-        PhotoPair updatedPhotoPair = photoPairRepository.save(photoPair);
-
-        log.info("Successfully uploaded before photo for photo pair: {}", photoPairId);
-        return new PhotoPairDTO(updatedPhotoPair);
-    }
-
-    @Override
-    @Transactional
-    public PhotoPairDTO uploadAfterPhoto(Long photoPairId, MultipartFile file) throws IOException {
-        log.info("Uploading after photo for photo pair: {}", photoPairId);
-
-        PhotoPair photoPair = photoPairRepository.findByIdWithPhotos(photoPairId)
-                .orElseThrow(() -> new RuntimeException("Photo pair not found with id: " + photoPairId));
-
-        validateFile(file);
-
-        // If there's already an after photo, delete it
-        if (photoPair.getAfterPhoto() != null) {
-            photosRepository.delete(photoPair.getAfterPhoto());
-        }
-
-        Photo afterPhoto = createPhotoFromFile(file);
-        Photo savedAfterPhoto = photosRepository.save(afterPhoto);
-
-        photoPair.setAfterPhoto(savedAfterPhoto);
-        PhotoPair updatedPhotoPair = photoPairRepository.save(photoPair);
-
-        log.info("Successfully uploaded after photo for photo pair: {}", photoPairId);
-        return new PhotoPairDTO(updatedPhotoPair);
-    }
-
-    @Override
-    @Transactional
-    public PhotoPairDTO updatePhotoPair(Long photoPairId, String title, String description) {
-        log.info("Updating photo pair: {}", photoPairId);
-
-        PhotoPair photoPair = photoPairRepository.findById(photoPairId)
-                .orElseThrow(() -> new RuntimeException("Photo pair not found with id: " + photoPairId));
-
-        photoPair.setTitle(title);
-        photoPair.setDescription(description);
-
-        PhotoPair updatedPhotoPair = photoPairRepository.save(photoPair);
-        log.info("Successfully updated photo pair: {}", photoPairId);
-
-        return new PhotoPairDTO(updatedPhotoPair);
-    }
-
-    @Override
-    @Transactional
-    public String deletePhotoPair(Long photoPairId) {
-        log.info("Deleting photo pair: {}", photoPairId);
-
-        if (photoPairRepository.existsById(photoPairId)) {
-            photoPairRepository.deleteById(photoPairId);
-            log.info("Successfully deleted photo pair: {}", photoPairId);
-            return "Photo pair deleted successfully";
-        } else {
-            log.warn("Photo pair not found: {}", photoPairId);
-            return "Photo pair not found";
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<PhotoPairDTO> getPhotoPairById(Long id) {
-        log.info("Fetching photo pair by id: {}", id);
-        return photoPairRepository.findByIdWithPhotos(id)
-                .map(PhotoPairDTO::new);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public byte[] getPhotoData(Long photoId) {
-        log.info("Fetching photo data for photo id: {}", photoId);
-        Photo photo = photosRepository.findById(photoId)
-                .orElseThrow(() -> new RuntimeException("Photo not found with id: " + photoId));
-        return photo.getData();
-    }
-
-    private Photo createPhotoFromFile(MultipartFile file) throws IOException {
+        // Create and save photo
         Photo photo = new Photo();
         photo.setFilename(file.getOriginalFilename());
         photo.setContentType(file.getContentType());
         photo.setData(file.getBytes());
-        return photo;
+        // Note: Photo entity doesn't have user relationship, but we validate user exists
+
+        Photo savedPhoto = photosRepository.save(photo);
+        log.info("Photo saved successfully with id: {} for user: {}", savedPhoto.getId(), email);
+        return savedPhoto;
+    }
+
+    @Override
+    @Transactional
+    public String deletePhoto(Long id) {
+        log.info("Deleting photo with id: {}", id);
+
+        if (!photosRepository.existsById(id)) {
+            throw new PhotoException("Photo not found with id: " + id);
+        }
+
+        photosRepository.deleteById(id);
+        log.info("Photo deleted successfully with id: {}", id);
+        return "Photo with id: " + id + " deleted successfully!";
     }
 
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new RuntimeException("Cannot upload empty file");
+            throw new PhotoException("Cannot upload empty file");
         }
 
+        // Check file size
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new RuntimeException("File size too large. Maximum " + (MAX_FILE_SIZE / (1024 * 1024)) + "MB allowed.");
+            throw new PhotoException("File size too large. Maximum " + (MAX_FILE_SIZE / (1024 * 1024)) + "MB allowed.");
         }
 
+        // Check file type
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
-            throw new RuntimeException("Only image files are allowed. Supported types: " + ALLOWED_CONTENT_TYPES);
+            throw new PhotoException("Only image files are allowed. Supported types: " + ALLOWED_CONTENT_TYPES);
         }
 
+        // Check filename
         String filename = file.getOriginalFilename();
         if (filename == null || filename.trim().isEmpty()) {
-            throw new RuntimeException("Filename cannot be empty");
+            throw new PhotoException("Filename cannot be empty");
         }
 
         log.info("File validation passed for: {} (size: {} bytes, type: {})", filename, file.getSize(), contentType);

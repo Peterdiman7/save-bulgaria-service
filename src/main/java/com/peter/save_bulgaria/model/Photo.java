@@ -1,22 +1,27 @@
 package com.peter.save_bulgaria.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
-@Data
-@Table(name = "photos")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Photo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String filename;
+    private String url;
 
-    private String contentType;
+    private String type; // "before" or "after"
 
-    @Lob
-    private byte[] data;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
+    // other fields like timestamp, location, etc.
 }

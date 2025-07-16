@@ -40,7 +40,7 @@ public class PhotoServiceImpl implements PhotoService {
     public Photo savePhotoForUser(String email, String name, MultipartFile file) throws IOException {
         log.info("Saving photo for user: {}", email);
 
-        // Find user
+        // Find user to validate they exist
         Optional<User> optionalUser = userService.findByEmail(email);
         User user = optionalUser.orElseThrow(() -> new RuntimeException(
                 "User not found with email: " + email + ". Please login first before uploading photos."
@@ -49,12 +49,11 @@ public class PhotoServiceImpl implements PhotoService {
         // Validate file
         validateFile(file);
 
-        // Create and save photo
+        // Create and save photo (Note: Photo entity doesn't have user relationship)
         Photo photo = new Photo();
         photo.setFilename(file.getOriginalFilename());
         photo.setContentType(file.getContentType());
         photo.setData(file.getBytes());
-        photo.setUser(user);
 
         Photo savedPhoto = photosRepository.save(photo);
         log.info("Photo saved successfully with id: {} for user: {}", savedPhoto.getId(), email);

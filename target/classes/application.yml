@@ -1,8 +1,10 @@
 spring:
+  server:
+    port: ${PORT:8080}
   datasource:
-    url: jdbc:postgresql://localhost:5432/save_bulgaria_db
-    username: postgres
-    password: 123
+    url: jdbc:postgresql://dpg-d1qhlher433s73ed8dtg-a.oregon-postgres.render.com/save_bulgaria_db
+    username: save_bulgaria_db_user
+    password: wdSvfPXocQuOmxShjdxuiWCnD1zELOOM
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -16,6 +18,7 @@ spring:
 
   servlet:
     multipart:
+      enabled: true
       max-file-size: 10MB
       max-request-size: 10MB
 
@@ -38,7 +41,8 @@ logging:
     name: logs/save-bulgaria.log
 
 server:
-  port: 8080
+  port: ${PORT:8080}
+  address: 0.0.0.0
   error:
     include-message: always
     include-binding-errors: always
