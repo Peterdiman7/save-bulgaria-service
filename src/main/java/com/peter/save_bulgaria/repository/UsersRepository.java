@@ -20,15 +20,18 @@ public interface UsersRepository extends JpaRepository<User, Long> {
 
     boolean existsByGoogleId(String googleId);
 
-    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.photos")
-    List<User> findAllWithPhotos();
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.photoPairs")
+    List<User> findAllWithPhotoPairs();
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.photos WHERE u.id = :id")
-    Optional<User> findByIdWithPhotos(@Param("id") Long id);
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.photoPairs WHERE u.id = :id")
+    Optional<User> findByIdWithPhotoPairs(@Param("id") Long id);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.photos WHERE u.email = :email")
-    Optional<User> findByEmailWithPhotos(@Param("email") String email);
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.photoPairs WHERE u.email = :email")
+    Optional<User> findByEmailWithPhotoPairs(@Param("email") String email);
 
-    @Query("SELECT COUNT(p) FROM User u JOIN u.photos p WHERE u.id = :userId")
-    Long countPhotosByUserId(@Param("userId") Long userId);
+    @Query("SELECT COUNT(pp) FROM User u JOIN u.photoPairs pp WHERE u.id = :userId")
+    Long countPhotoPairsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(pp) FROM User u JOIN u.photoPairs pp WHERE u.id = :userId AND pp.beforePhoto IS NOT NULL AND pp.afterPhoto IS NOT NULL")
+    Long countCompletePhotoPairsByUserId(@Param("userId") Long userId);
 }

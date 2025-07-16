@@ -8,7 +8,7 @@ public class PhotoDTO {
     private Long id;
     private String filename;
     private String contentType;
-    private long fileSize; // Add file size info
+    private long fileSize;
 
     public PhotoDTO(Photo photo) {
         this.id = photo.getId();

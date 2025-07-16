@@ -18,8 +18,7 @@ public class User {
     private String email;
     private String name;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<Photo> photos;
-
+    private List<PhotoPair> photoPairs;
 }

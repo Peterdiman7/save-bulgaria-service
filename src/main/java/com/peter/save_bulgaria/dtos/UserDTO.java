@@ -11,13 +11,13 @@ public class UserDTO {
     private Long id;
     private String name;
     private String email;
-    private List<PhotoDTO> photos;
+    private List<PhotoPairDTO> photoPairs;
 
     public UserDTO(User user) {
         this.id = user.getId();
         this.name = user.getName();
         this.email = user.getEmail();
-        this.photos = user.getPhotos() == null ? List.of() :
-                user.getPhotos().stream().map(PhotoDTO::new).collect(Collectors.toList());
+        this.photoPairs = user.getPhotoPairs() == null ? List.of() :
+                user.getPhotoPairs().stream().map(PhotoPairDTO::new).collect(Collectors.toList());
     }
 }
