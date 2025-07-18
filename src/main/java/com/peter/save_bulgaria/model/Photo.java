@@ -2,6 +2,8 @@ package com.peter.save_bulgaria.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
@@ -9,11 +11,21 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "photo")
 public class Photo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String filename;
+
+    private String contentType;
+
+    @Lob
+    @Column(name = "data", columnDefinition = "bytea")
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    private byte[] data;
 
     private String url;
 
@@ -23,5 +35,10 @@ public class Photo {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // other fields like timestamp, location, etc.
+    // Constructor for creating photo from file
+    public Photo(String filename, String contentType, byte[] data) {
+        this.filename = filename;
+        this.contentType = contentType;
+        this.data = data;
+    }
 }
