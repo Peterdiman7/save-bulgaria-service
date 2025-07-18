@@ -45,18 +45,25 @@ public class PhotoPairController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<?> createPhotoPair(@RequestBody Map<String, String> request) {
-        try {
-            String email = request.get("email");
-            String title = request.get("title");
-            String description = request.get("description");
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createPhotoPair(
+            @RequestPart("before") MultipartFile before,
+            @RequestPart("after") MultipartFile after,
+            @RequestPart("email") String email,
+            @RequestPart(value = "title", required = false) String title,
+            @RequestPart(value = "description", required = false) String description) {
 
+        try {
             if (email == null || email.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
             }
 
             PhotoPairDTO photoPair = photoPairService.createPhotoPair(email, title, description);
+
+            // Assuming your service can handle the file uploads too, or add file processing here:
+            photoPairService.uploadBeforePhoto(photoPair.getId(), before);
+            photoPairService.uploadAfterPhoto(photoPair.getId(), after);
+
             return ResponseEntity.status(HttpStatus.CREATED).body(photoPair);
         } catch (Exception e) {
             log.error("Error creating photo pair", e);
@@ -64,6 +71,7 @@ public class PhotoPairController {
                     .body(Map.of("error", "Failed to create photo pair: " + e.getMessage()));
         }
     }
+
 
     @PostMapping("/{id}/before-photo")
     public ResponseEntity<?> uploadBeforePhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {

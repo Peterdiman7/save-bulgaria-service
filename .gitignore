@@ -39,4 +39,4 @@ logs/
 .classpath
 .project
 .settings/
-target/
+/target/**
