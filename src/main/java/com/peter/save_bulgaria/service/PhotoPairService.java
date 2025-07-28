@@ -1,7 +1,6 @@
 package com.peter.save_bulgaria.service;
 
 import com.peter.save_bulgaria.dtos.PhotoPairDTO;
-import com.peter.save_bulgaria.model.PhotoPair;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
