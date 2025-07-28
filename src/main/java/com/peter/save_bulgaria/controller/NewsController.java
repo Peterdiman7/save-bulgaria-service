@@ -21,14 +21,16 @@ public class NewsController {
     private final NewsService newsService;
 
     @GetMapping
-    public ResponseEntity<List<News>> getAllNews() {
+    public ResponseEntity<?> getAllNews() {
         try {
             log.info("GET /api/news - Fetching all news");
             List<News> news = newsService.getAllNews();
+            log.info("Successfully fetched {} news items", news.size());
             return ResponseEntity.ok(news);
         } catch (Exception e) {
             log.error("Error fetching all news", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to fetch news: " + e.getMessage()));
         }
     }
 
@@ -37,8 +39,14 @@ public class NewsController {
         try {
             log.info("GET /api/news/{} - Fetching news by id", id);
             return newsService.findById(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
+                    .map(news -> {
+                        log.info("Successfully found news with id: {}", id);
+                        return ResponseEntity.ok(news);
+                    })
+                    .orElseGet(() -> {
+                        log.warn("News not found with id: {}", id);
+                        return ResponseEntity.notFound().build();
+                    });
         } catch (Exception e) {
             log.error("Error fetching news by id: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -53,12 +61,15 @@ public class NewsController {
 
             // Validate required fields
             if (news.getTitle() == null || news.getTitle().trim().isEmpty()) {
+                log.warn("News creation failed: Title is required");
                 return ResponseEntity.badRequest().body(Map.of("error", "Title is required"));
             }
             if (news.getCategory() == null || news.getCategory().trim().isEmpty()) {
+                log.warn("News creation failed: Category is required");
                 return ResponseEntity.badRequest().body(Map.of("error", "Category is required"));
             }
             if (news.getContent() == null || news.getContent().trim().isEmpty()) {
+                log.warn("News creation failed: Content is required");
                 return ResponseEntity.badRequest().body(Map.of("error", "Content is required"));
             }
 
