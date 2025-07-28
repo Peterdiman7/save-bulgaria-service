@@ -31,17 +31,13 @@ public class News {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    public News() {
-        this.id = UUID.randomUUID();
-    }
-
     @PrePersist
     protected void onCreate() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
+        }
+        if (id == null) {
+            id = UUID.randomUUID();
         }
     }
 }
