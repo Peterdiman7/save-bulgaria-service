@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +23,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public Optional<News> findById(UUID id) {
+    public Optional<News> findById(Long id) {
         return newsRepository.findById(id);
     }
 

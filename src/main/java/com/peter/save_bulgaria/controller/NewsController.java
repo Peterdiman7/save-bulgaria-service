@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/news")
@@ -34,7 +33,7 @@ public class NewsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getNewsById(@PathVariable UUID id) {
+    public ResponseEntity<?> getNewsById(@PathVariable Long id) {
         try {
             log.info("GET /api/news/{} - Fetching news by id", id);
             return newsService.findById(id)

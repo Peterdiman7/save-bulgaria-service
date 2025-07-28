@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -16,8 +15,8 @@ import java.util.UUID;
 public class News {
 
     @Id
-    @Column(columnDefinition = "VARCHAR(36)")
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String title;
@@ -35,9 +34,6 @@ public class News {
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
-        }
-        if (id == null) {
-            id = UUID.randomUUID();
         }
     }
 }
